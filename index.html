@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Roles Explorer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Orbitron:wght@400;700;900&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Poppins',sans-serif;background:#050510;color:#fff;min-height:100vh;overflow-x:hidden}
+
+        /* BG */
+        .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+        .bg .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.06;animation:dft 25s ease-in-out infinite alternate}
+        @keyframes dft{0%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,-90px) scale(1.4)}100%{transform:translate(-40px,70px) scale(0.7)}}
+
+        /* HEADER */
+        .hdr{position:relative;z-index:10;text-align:center;padding:16px;background:linear-gradient(135deg,#0a0020,#0d1b2a);border-bottom:2px solid #8b5cf6}
+        .hdr h1{font-family:'Orbitron',sans-serif;font-size:1.8rem;background:linear-gradient(90deg,#00d4ff,#ff006e,#00ff88,#ffd700);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gs 4s ease infinite}
+        @keyframes gs{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        .hdr p{color:#555;font-size:0.75rem;margin-top:2px}
+
+        /* TOP BAR */
+        .tbar{position:sticky;top:0;z-index:100;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:10px 12px;background:rgba(8,5,22,0.97);backdrop-filter:blur(14px);border-bottom:1px solid #8b5cf622}
+        .tb{padding:5px 14px;border-radius:18px;border:2px solid;background:0;font-family:'Poppins',sans-serif;font-weight:600;font-size:0.7rem;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.7px}
+        .tb:hover{transform:scale(1.05);filter:brightness(1.3)}
+        .tb.on{color:#000!important;transform:scale(1.04)}
+        .tb[data-f="all"]{border-color:#0ff;color:#0ff}.tb[data-f="all"].on{background:#0ff;box-shadow:0 0 14px #0ff4}
+        .tb[data-f="fullstack"]{border-color:#00d4ff;color:#00d4ff}.tb[data-f="fullstack"].on{background:#00d4ff;box-shadow:0 0 14px #0d4ff4}
+        .tb[data-f="doctor"]{border-color:#00ff88;color:#00ff88}.tb[data-f="doctor"].on{background:#00ff88;box-shadow:0 0 14px #0ff884}
+        .tb[data-f="law"]{border-color:#ff8c00;color:#ff8c00}.tb[data-f="law"].on{background:#ff8c00;box-shadow:0 0 14px #f8c004}
+        .tb[data-f="bank"]{border-color:#ffd700;color:#ffd700}.tb[data-f="bank"].on{background:#ffd700;box-shadow:0 0 14px #fd7004}
+        .tb[data-f="engineering"]{border-color:#8b5cf6;color:#8b5cf6}.tb[data-f="engineering"].on{background:#8b5cf6;color:#fff;box-shadow:0 0 14px #b5cf64}
+        .tb[data-f="teaching"]{border-color:#ff006e;color:#ff006e}.tb[data-f="teaching"].on{background:#ff006e;color:#fff;box-shadow:0 0 14px #f006e4}
+        .tb[data-f="civil"]{border-color:#ff6b6b;color:#ff6b6b}.tb[data-f="civil"].on{background:#ff6b6b;box-shadow:0 0 14px #f6b6b4}
+        .tb[data-f="defence"]{border-color:#4ecdc4;color:#4ecdc4}.tb[data-f="defence"].on{background:#4ecdc4;box-shadow:0 0 14px #4ecdc4}
+        .tb[data-f="arts"]{border-color:#f39c12;color:#f39c12}.tb[data-f="arts"].on{background:#f39c12;box-shadow:0 0 14px #39c124}
+        .tb[data-f="science"]{border-color:#3498db;color:#3498db}.tb[data-f="science"].on{background:#3498db;color:#fff;box-shadow:0 0 14px #498db4}
+        .tb[data-f="commerce"]{border-color:#e74c3c;color:#e74c3c}.tb[data-f="commerce"].on{background:#e74c3c;color:#fff;box-shadow:0 0 14px #74c3c4}
+        .tb[data-f="nonvoice"]{border-color:#a29bfe;color:#a29bfe}.tb[data-f="nonvoice"].on{background:#a29bfe;color:#000;box-shadow:0 0 14px #29bfe4}
+
+        /* LAYOUT */
+        .lay{display:grid;grid-template-columns:170px 1fr 170px;position:relative;z-index:10}
+        @media(max-width:860px){.lay{grid-template-columns:1fr}.lp,.rp{flex-direction:row!important;flex-wrap:wrap;justify-content:center;border:none!important;padding:8px!important}}
+        .lp,.rp{display:flex;flex-direction:column;gap:5px;padding:14px 7px}
+        .lp{background:linear-gradient(180deg,#00ff8806,#00d4ff06);border-right:1px solid #00ff8815}
+        .rp{background:linear-gradient(180deg,#ff006e06,#ff8c0006);border-left:1px solid #ff006e15}
+        .pt{font-family:'Orbitron',sans-serif;font-size:.6rem;text-transform:uppercase;letter-spacing:2px;text-align:center;padding-bottom:6px;margin-bottom:4px}
+        .lp .pt{color:#00ff88;border-bottom:1px solid #00ff8820}
+        .rp .pt{color:#ff006e;border-bottom:1px solid #ff006e20}
+        .sb{padding:7px 9px;border:1px solid #ffffff0a;border-radius:8px;background:#ffffff03;color:#999;font-family:'Poppins',sans-serif;font-size:.7rem;cursor:pointer;transition:all .2s;text-align:center}
+        .sb:hover{border-color:#ffffff22;transform:translateX(2px)}
+        .lp .sb.on{background:linear-gradient(135deg,#00ff8812,#00d4ff12);border-color:#00ff88;color:#00ff88;box-shadow:0 0 8px #00ff8810}
+        .rp .sb.on{background:linear-gradient(135deg,#ff006e12,#ff8c0012);border-color:#ff006e;color:#ff006e;box-shadow:0 0 8px #ff006e10}
+
+        /* CONTENT */
+        .cnt{padding:14px;min-height:55vh;overflow:hidden;position:relative}
+        .sts{display:flex;justify-content:center;gap:18px;margin-bottom:12px;flex-wrap:wrap}
+        .st{display:flex;align-items:center;gap:4px;font-size:.75rem;color:#666}
+        .st b{font-family:'Orbitron',sans-serif;font-size:.95rem}
+        .st:nth-child(1) b{color:#00d4ff}.st:nth-child(2) b{color:#00ff88}.st:nth-child(3) b{color:#ff006e}
+
+        .zw{transform-origin:center top;transition:transform .3s}
+
+        /* ==================== NORMAL VIEW ==================== */
+        .grd{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+
+        .cd{
+            background:linear-gradient(145deg,#111130,#1a1a44);
+            border:1px solid #ffffff0a;border-radius:14px;padding:16px;
+            cursor:pointer;transition:all .3s ease;position:relative;overflow:hidden;
+            opacity:0;animation:pu .4s ease forwards;
+        }
+        .cd:hover{transform:translateY(-4px);box-shadow:0 12px 30px #00000080,0 0 18px #8b5cf610;border-color:#8b5cf633}
+        @keyframes pu{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
+        .cd .sp{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+        .cd .ic{font-size:1.6rem;margin-bottom:7px;display:block}
+        .cd .nm{font-size:.95rem;font-weight:700;margin-bottom:4px}
+        .cd .ql{font-size:.68rem;color:#777;margin-bottom:8px;line-height:1.3}
+        .cd .sal{font-size:.62rem;color:#00ffcc;margin-bottom:7px;font-style:italic}
+        .tgs{display:flex;flex-wrap:wrap;gap:3px}
+        .tg{padding:2px 7px;border-radius:8px;font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+        .tg-sw{background:#00d4ff12;color:#00d4ff;border:1px solid #00d4ff25}
+        .tg-hw{background:#ff8c0012;color:#ff8c00;border:1px solid #ff8c0025}
+        .tg-gv{background:#00ff8812;color:#00ff88;border:1px solid #00ff8825}
+        .tg-pv{background:#ff006e12;color:#ff006e;border:1px solid #ff006e25}
+        .tg-sta{background:#ffd70012;color:#ffd700;border:1px solid #ffd70025}
+        .tg-ctr{background:#8b5cf612;color:#8b5cf6;border:1px solid #8b5cf625}
+        .tg-nv{background:#a29bfe12;color:#a29bfe;border:1px solid #a29bfe25}
+
+        /* ==================== 3D VIEW — COMPLETELY DIFFERENT ==================== */
+        .scene3d{
+            width:100%;min-height:500px;
+            perspective:1200px;
+            display:flex;flex-wrap:wrap;justify-content:center;
+            gap:40px;padding:40px 20px;
+        }
+        .cube-wrap{
+            width:200px;height:240px;
+            perspective:800px;
+            cursor:pointer;
+        }
+        .cube{
+            width:100%;height:100%;
+            position:relative;
+            transform-style:preserve-3d;
+            transition:transform .1s ease;
+            animation:autoRotate 12s ease-in-out infinite;
+        }
+        .cube-wrap:hover .cube{animation-play-state:paused}
+        @keyframes autoRotate{
+            0%{transform:rotateY(0deg) rotateX(5deg)}
+            25%{transform:rotateY(15deg) rotateX(-5deg)}
+            50%{transform:rotateY(0deg) rotateX(5deg)}
+            75%{transform:rotateY(-15deg) rotateX(-5deg)}
+            100%{transform:rotateY(0deg) rotateX(5deg)}
+        }
+        .cube-face{
+            position:absolute;width:100%;height:100%;
+            border-radius:16px;padding:16px;
+            display:flex;flex-direction:column;
+            backface-visibility:hidden;
+            border:1px solid #ffffff15;
+            overflow:hidden;
+        }
+        .cube-face::after{
+            content:'';position:absolute;inset:0;border-radius:16px;
+            background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 40%);
+            pointer-events:none;
+        }
+        .face-front{
+            background:linear-gradient(145deg,#0d0d2b,#1a1a50);
+            transform:translateZ(30px);
+        }
+        .face-back{
+            background:linear-gradient(145deg,#1a0d2b,#2a1a50);
+            transform:rotateY(180deg) translateZ(30px);
+        }
+        .face-front .f-icon{font-size:2.2rem;margin-bottom:10px}
+        .face-front .f-name{font-size:.9rem;font-weight:700;margin-bottom:5px}
+        .face-front .f-qual{font-size:.65rem;color:#888;line-height:1.3;margin-bottom:8px}
+        .face-front .f-sal{font-size:.6rem;color:#00ffcc;font-style:italic}
+        .face-front .f-tags{margin-top:auto}
+
+        .face-back .fb-title{font-family:'Orbitron',sans-serif;font-size:.7rem;color:#00d4ff;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+        .face-back .fb-roles{font-size:.68rem;color:#ccc;line-height:1.6}
+        .face-back .fb-outfit{font-size:.65rem;color:#ffd700;margin-top:8px}
+        .face-back .fb-sector{margin-top:auto;font-size:.6rem}
+
+        .cube-shadow{
+            position:absolute;bottom:-20px;left:10%;width:80%;height:20px;
+            background:radial-gradient(ellipse,rgba(139,92,246,.2),transparent);
+            border-radius:50%;filter:blur(8px);
+            transition:all .3s;
+        }
+        .cube-wrap:hover .cube-shadow{
+            background:radial-gradient(ellipse,rgba(139,92,246,.4),transparent);
+            transform:scaleX(1.2);
+        }
+        .cube-glow{
+            position:absolute;inset:-2px;border-radius:18px;
+            transform-style:preserve-3d;
+            opacity:0;transition:opacity .3s;
+        }
+        .cube-wrap:hover .cube-glow{opacity:1}
+        .cube-glow::before{
+            content:'';position:absolute;inset:0;border-radius:18px;
+            background:conic-gradient(from 0deg,#00d4ff,#ff006e,#00ff88,#ffd700,#8b5cf6,#00d4ff);
+            animation:spin 3s linear infinite;filter:blur(6px);opacity:.5;
+            transform:translateZ(29px);
+        }
+        @keyframes spin{from{transform:translateZ(29px) rotate(0)}to{transform:translateZ(29px) rotate(360deg)}}
+
+        /* ==================== 5D VIEW ==================== */
+        .scene5d{perspective:2200px;display:flex;flex-wrap:wrap;justify-content:center;gap:28px;padding:30px 16px}
+        .c5{width:170px;height:270px;position:relative;cursor:pointer;transform-style:preserve-3d;animation:orb5 7s ease-in-out infinite;transition:all .3s}
+        .c5:nth-child(even){animation-delay:-3.5s}.c5:nth-child(3n){animation-delay:-2s}.c5:nth-child(5n){animation-delay:-5s}
+        @keyframes orb5{0%,100%{transform:translateZ(0) rotateY(0) translateY(0)}25%{transform:translateZ(45px) rotateY(7deg) translateY(-18px)}50%{transform:translateZ(15px) rotateY(-4deg) translateY(-8px)}75%{transform:translateZ(55px) rotateY(-7deg) translateY(-22px)}}
+        .c5:hover{animation-play-state:paused;transform:translateZ(90px) scale(1.12)!important;z-index:50}
+        .c5-in{width:100%;height:100%;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#12123a,#1e1e50);border:1px solid #ffffff0c;box-shadow:0 8px 35px #00000080;display:flex;flex-direction:column;align-items:center;padding:12px 8px;text-align:center;position:relative}
+        .c5:hover .c5-in{border-color:#8b5cf680;box-shadow:0 18px 55px #000000a0,0 0 35px #8b5cf630,0 0 70px #00d4ff15}
+        .c5-in .gring{position:absolute;inset:-3px;border-radius:18px;background:conic-gradient(from 0deg,#00d4ff,#ff006e,#00ff88,#ffd700,#8b5cf6,#00d4ff);opacity:0;transition:opacity .3s;z-index:-1;animation:spin 3s linear infinite}
+        .c5:hover .gring{opacity:1}
+        .av5{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:6px;background:radial-gradient(circle,#8b5cf620,transparent);border:2px solid #ffffff12}
+        .c5:hover .av5{border-color:#00d4ff60;box-shadow:0 0 18px #00d4ff40}
+        .c5n{font-size:.72rem;font-weight:700;margin-bottom:3px;line-height:1.2}
+        .c5q{font-size:.56rem;color:#888;line-height:1.2;margin-bottom:4px}
+        .c5s{font-size:.54rem;color:#00ffcc;font-style:italic}
+        .tt5{position:absolute;bottom:105%;left:50%;transform:translateX(-50%) scale(.8);background:rgba(8,5,22,.97);border:1px solid #8b5cf6;border-radius:12px;padding:10px 14px;min-width:210px;pointer-events:none;opacity:0;transition:all .25s;z-index:100;box-shadow:0 8px 35px #000000b0,0 0 18px #8b5cf625;backdrop-filter:blur(10px)}
+        .c5:hover .tt5{opacity:1;transform:translateX(-50%) scale(1)}
+        .tt5 .tn{font-family:'Orbitron',sans-serif;font-size:.75rem;color:#00d4ff;margin-bottom:3px}
+        .tt5 .to{font-size:.65rem;color:#ffd700;margin-bottom:2px}
+        .tt5 .tq{font-size:.63rem;color:#aaa;margin-bottom:2px}
+        .tt5 .ts{font-size:.6rem;color:#00ff88}
+
+        /* TREE */
+        .tree{display:flex;flex-direction:column;align-items:center;padding:18px}
+        .troot{display:inline-block;padding:10px 24px;border-radius:12px;background:linear-gradient(135deg,#8b5cf618,#00d4ff18);border:2px solid #8b5cf6;font-family:'Orbitron',sans-serif;font-size:.82rem;color:#0ff;margin-bottom:10px}
+        .tconn{width:3px;height:16px;margin:0 auto;border-radius:2px}
+        .tlvl{margin:6px 0;width:100%}
+        .tlh{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:'Orbitron',sans-serif;font-size:.78rem;transition:all .2s;user-select:none;margin:0 auto;width:fit-content;min-width:220px}
+        .tlh:hover{filter:brightness(1.3);transform:scale(1.02)}
+        .tlh .ar{transition:transform .25s;font-size:.65rem}
+        .tlh.op .ar{transform:rotate(90deg)}
+        .tli{display:none;margin-top:6px}
+        .tlh.op+.tli{display:block}
+        .tbr{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:8px 0}
+        .tlf{background:#ffffff04;border:1px solid #ffffff08;border-radius:9px;padding:8px 12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;min-width:180px;max-width:260px}
+        .tlf:hover{border-color:#8b5cf633;background:#8b5cf608;transform:translateY(-2px)}
+        .tlf .li{font-size:1.2rem}.tlf .ln{font-size:.72rem;font-weight:600}.tlf .lq{font-size:.58rem;color:#777}
+
+        .nrs{text-align:center;padding:40px;color:#555}
+        .nrs .bi{font-size:3rem;margin-bottom:10px}
+        .nrs h3{font-family:'Orbitron',sans-serif;color:#666}
+
+        /* BOTTOM */
+        .bb{position:sticky;bottom:0;z-index:100;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;padding:10px 14px;background:rgba(8,5,22,.97);backdrop-filter:blur(14px);border-top:1px solid #8b5cf622}
+        .vl{font-family:'Orbitron',sans-serif;font-size:.6rem;color:#555;text-transform:uppercase;letter-spacing:2px;margin-right:6px}
+        .vb{padding:7px 18px;border:2px solid #ffffff12;border-radius:9px;background:#ffffff03;color:#888;font-family:'Poppins',sans-serif;font-weight:600;font-size:.7rem;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:1px}
+        .vb:hover{border-color:#ffffff30;color:#ccc}
+        .vb.on{border-color:#0ff;color:#0ff;background:#0ff008;box-shadow:0 0 12px #0ff15}
+        .zi{font-size:.6rem;color:#444;margin-left:8px;font-family:'Orbitron',sans-serif}
+
+        /* MODAL */
+        .ov{position:fixed;inset:0;background:#000000e0;backdrop-filter:blur(8px);z-index:2000;display:none;justify-content:center;align-items:center;padding:12px}
+        .ov.op{display:flex}
+        .md{background:linear-gradient(145deg,#16163a,#0e0e28);border:1px solid #8b5cf640;border-radius:18px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;position:relative;animation:mi .35s cubic-bezier(.17,.67,.35,1.2);box-shadow:0 22px 60px #000000b0,0 0 35px #8b5cf615}
+        @keyframes mi{from{opacity:0;transform:scale(.85) translateY(30px)}to{opacity:1;transform:none}}
+        .md::-webkit-scrollbar{width:4px}.md::-webkit-scrollbar-thumb{background:#8b5cf6;border-radius:2px}
+        .mhd{padding:22px 26px;border-bottom:1px solid #ffffff06;position:relative}
+        .mhd .mst{position:absolute;top:0;left:0;right:0;height:4px;border-radius:18px 18px 0 0}
+        .cx{position:absolute;top:10px;right:14px;width:34px;height:34px;border:1px solid #ffffff12;border-radius:50%;background:#ffffff04;color:#aaa;font-size:1rem;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center}
+        .cx:hover{background:#ff006e20;border-color:#ff006e;color:#ff006e;transform:rotate(90deg)}
+        .mci{font-size:2.4rem;display:block;margin-bottom:8px}
+        .mct{font-family:'Orbitron',sans-serif;font-size:1.3rem;background:linear-gradient(90deg,#00d4ff,#ff006e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .mcs{color:#555;font-size:.75rem;margin-top:2px}
+        .mbd{padding:22px 26px}
+        .sc{margin-bottom:20px}
+        .sct{font-family:'Orbitron',sans-serif;font-size:.65rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+        .sct .sln{flex:1;height:1px;background:linear-gradient(90deg,#8b5cf640,transparent)}
+        .rl{display:flex;flex-direction:column;gap:5px}
+        .rr{background:#ffffff03;border:1px solid #ffffff05;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem}
+        .rr:hover{border-color:#8b5cf625;transform:translateX(3px)}
+        .rd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+        .rr:nth-child(1) .rd{background:#00d4ff;box-shadow:0 0 6px #00d4ff}
+        .rr:nth-child(2) .rd{background:#00ff88;box-shadow:0 0 6px #00ff88}
+        .rr:nth-child(3) .rd{background:#ff006e;box-shadow:0 0 6px #ff006e}
+        .rr:nth-child(4) .rd{background:#ffd700;box-shadow:0 0 6px #ffd700}
+        .rr:nth-child(5) .rd{background:#ff8c00;box-shadow:0 0 6px #ff8c00}
+        .rr:nth-child(6) .rd{background:#8b5cf6;box-shadow:0 0 6px #8b5cf6}
+        .bds{display:flex;flex-wrap:wrap;gap:7px}
+        .bd{padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:600;display:flex;align-items:center;gap:5px}
+        .bd-s{background:#00d4ff10;border:1px solid #00d4ff28;color:#00d4ff}
+        .bd-h{background:#ff8c0010;border:1px solid #ff8c0028;color:#ff8c00}
+        .bd-g{background:#00ff8810;border:1px solid #00ff8828;color:#00ff88}
+        .bd-p{background:#ff006e10;border:1px solid #ff006e28;color:#ff006e}
+        .bd-st{background:#ffd70010;border:1px solid #ffd70028;color:#ffd700}
+        .bd-ct{background:#8b5cf610;border:1px solid #8b5cf628;color:#8b5cf6}
+        .bd-no{background:#ffffff05;border:1px solid #ffffff15;color:#888}
+        .bd-nv{background:#a29bfe10;border:1px solid #a29bfe28;color:#a29bfe}
+        .qb{background:linear-gradient(135deg,#8b5cf608,#00d4ff08);border:1px solid #8b5cf625;border-radius:12px;padding:14px}
+        .qb .qm{font-size:1rem;font-weight:700;color:#0ff;margin-bottom:4px}
+        .qb .qd{font-size:.75rem;color:#aaa;line-height:1.5}
+        .stb{width:100%;border-collapse:separate;border-spacing:0 3px}
+        .stb th{font-family:'Orbitron',sans-serif;font-size:.55rem;text-transform:uppercase;letter-spacing:1.5px;color:#777;padding:5px 8px;text-align:left}
+        .stb td{padding:7px 10px;background:#ffffff03;font-size:.72rem}
+        .stb tr td:first-child{border-radius:7px 0 0 7px;font-weight:600}
+        .stb tr td:last-child{border-radius:0 7px 7px 0;color:#00ffcc;font-family:'Orbitron',sans-serif;font-size:.68rem}
+        .tml{position:relative;padding-left:24px}
+        .tml::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#00d4ff,#00ff88,#ffd700,#ff8c00,#ff006e,#8b5cf6,#4ecdc4,#e74c3c);border-radius:2px}
+        .stp{position:relative;margin-bottom:12px;padding:10px 14px;background:#ffffff03;border:1px solid #ffffff05;border-radius:9px;transition:all .2s}
+        .stp:hover{border-color:#8b5cf625;transform:translateX(3px)}
+        .stp::before{content:'';position:absolute;left:-21px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;border:3px solid;background:#050510}
+        .stp:nth-child(1)::before{border-color:#00d4ff;box-shadow:0 0 6px #00d4ff}
+        .stp:nth-child(2)::before{border-color:#00ff88;box-shadow:0 0 6px #00ff88}
+        .stp:nth-child(3)::before{border-color:#ffd700;box-shadow:0 0 6px #ffd700}
+        .stp:nth-child(4)::before{border-color:#ff8c00;box-shadow:0 0 6px #ff8c00}
+        .stp:nth-child(5)::before{border-color:#ff006e;box-shadow:0 0 6px #ff006e}
+        .stp:nth-child(6)::before{border-color:#8b5cf6;box-shadow:0 0 6px #8b5cf6}
+        .stp:nth-child(7)::before{border-color:#4ecdc4;box-shadow:0 0 6px #4ecdc4}
+        .stp:nth-child(8)::before{border-color:#e74c3c;box-shadow:0 0 6px #e74c3c}
+        .stp .sl{font-family:'Orbitron',sans-serif;font-size:.52rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:1px}
+        .stp:nth-child(1) .sl{color:#00d4ff}.stp:nth-child(2) .sl{color:#00ff88}.stp:nth-child(3) .sl{color:#ffd700}
+        .stp:nth-child(4) .sl{color:#ff8c00}.stp:nth-child(5) .sl{color:#ff006e}.stp:nth-child(6) .sl{color:#8b5cf6}
+        .stp:nth-child(7) .sl{color:#4ecdc4}.stp:nth-child(8) .sl{color:#e74c3c}
+        .stp .stt{font-weight:700;font-size:.82rem;margin-bottom:2px}
+        .stp .sd{font-size:.68rem;color:#888;line-height:1.3}
+        .stp .sdr{font-size:.6rem;color:#555;margin-top:2px;font-style:italic}
+    </style>
+</head>
+<body>
+<div class="bg" id="bg"></div>
+<div class="hdr"><h1>🎯 JOB ROLES EXPLORER</h1><p>Qualifications · Salary · 3D Cards · 5D Avatars</p></div>
+<div class="tbar" id="tbar"></div>
+<div class="lay">
+    <div class="lp" id="lp"></div>
+    <div class="cnt">
+        <div class="sts" id="sts"></div>
+        <div class="zw" id="zw"><div id="grd"></div></div>
+    </div>
+    <div class="rp" id="rp"></div>
+</div>
+<div class="bb" id="bb"></div>
+<div class="ov" id="ov"><div class="md" id="md"></div></div>
+
+<script>
+const J=[
+{id:1,n:"Full Stack Developer",ic:"💻",f:"fullstack",t:"software",s:"private",g:null,nv:false,q:"B.Tech/BCA in CS or MCA",qd:"Frontend + Backend + Databases + APIs + DevOps.",r:["Frontend Dev","Backend Dev","Full Stack Engineer","MERN Dev","MEAN Dev"],o:"👔 Smart casual + laptop bag",sa:{i:"₹8K-15K/mo",j:"₹3-6 LPA",s:"₹8-18 LPA",e:"₹20-50 LPA",p:"₹50L-1.5Cr"},jr:[{l:"Schooling",t:"10th Standard",d:"Maths, Science, Computer basics",dr:"Till 15-16"},{l:"Higher Secondary",t:"12th (PCM/CS)",d:"Physics, Chemistry, Maths + CS",dr:"2 years"},{l:"Undergraduate",t:"B.Tech CSE / BCA",d:"CS or Computer Applications",dr:"4/3 years"},{l:"Skills",t:"Web Dev Bootcamp",d:"HTML, CSS, JS, React, Node, MongoDB",dr:"6-12 months"},{l:"PG (Optional)",t:"M.Tech / MCA",d:"Advanced roles",dr:"2 years"},{l:"Career",t:"Jr Full Stack Dev",d:"Internships → Portfolio → Open Source",dr:"1-2 years"}]},
+{id:2,n:"Data Scientist",ic:"📊",f:"fullstack",t:"software",s:"private",g:null,nv:false,q:"B.Tech/M.Tech + ML/AI",qd:"Statistics, Python/R, ML, Deep Learning.",r:["Data Analyst","ML Engineer","Data Scientist","AI Researcher"],o:"👔 Business casual",sa:{i:"₹10K-20K/mo",j:"₹4-8 LPA",s:"₹12-25 LPA",e:"₹25-60 LPA",p:"₹60L-2Cr"},jr:[{l:"Schooling",t:"10th",d:"Strong Maths",dr:"Till 15-16"},{l:"12th",t:"12th (PCM)",d:"PCM stream",dr:"2 years"},{l:"UG",t:"B.Tech CSE / B.Sc Stats",d:"CS or Statistics",dr:"3-4 years"},{l:"PG",t:"M.Tech AI/ML",d:"AI/ML specialization",dr:"2 years"},{l:"Certs",t:"Google/AWS ML",d:"Professional ML certs",dr:"3-6 months"},{l:"Career",t:"Jr Data Scientist",d:"Kaggle, datasets, papers",dr:"1-2 years"}]},
+{id:3,n:"Cyber Security Analyst",ic:"🔒",f:"fullstack",t:"software",s:"both",g:"central",nv:false,q:"B.Tech CS + CEH/CISSP",qd:"Ethical hacking, pen testing, forensics.",r:["SOC Analyst","Pen Tester","Security Engineer","CISO"],o:"🧥 Dark hoodie + tactical bag",sa:{i:"₹10K-18K/mo",j:"₹4-8 LPA",s:"₹10-22 LPA",e:"₹25-55 LPA",p:"₹60L-1.5Cr"},jr:[{l:"Schooling",t:"10th",d:"Security curiosity",dr:"Till 15-16"},{l:"12th",t:"12th PCM/CS",d:"CS + Maths",dr:"2 years"},{l:"UG",t:"B.Tech CS/IT",d:"Networking focus",dr:"4 years"},{l:"Certs",t:"CEH, Sec+",d:"CEH, OSCP certs",dr:"6-12 months"},{l:"Adv",t:"CISSP/CISA",d:"Senior certs",dr:"With exp"},{l:"Career",t:"SOC Analyst",d:"Security firms, banks",dr:"Start"}]},
+{id:4,n:"DevOps Engineer",ic:"🔄",f:"fullstack",t:"software",s:"private",g:null,nv:false,q:"B.Tech CS + Cloud Certs",qd:"CI/CD, Docker, K8s, AWS/Azure/GCP.",r:["DevOps Engineer","SRE","Cloud Engineer","Platform Engineer"],o:"👕 Tech hoodie",sa:{i:"₹10K-18K/mo",j:"₹5-10 LPA",s:"₹12-25 LPA",e:"₹28-55 LPA",p:"₹60L-1.2Cr"},jr:[{l:"Schooling",t:"10th",d:"Logical reasoning",dr:"Till 15-16"},{l:"12th",t:"12th PCM/CS",d:"CS + Maths",dr:"2 years"},{l:"UG",t:"B.Tech CS/IT",d:"CS or IT",dr:"4 years"},{l:"Skills",t:"Docker, K8s, CI/CD",d:"Containerization, Jenkins",dr:"6-12 months"},{l:"Certs",t:"AWS/Azure Cert",d:"Cloud certs",dr:"3-6 months"},{l:"Career",t:"Jr DevOps",d:"Automate, infra mgmt",dr:"1-2 years"}]},
+{id:5,n:"MBBS Doctor",ic:"🩺",f:"doctor",t:"none",s:"both",g:"both",nv:false,q:"MBBS (5.5 years)",qd:"NEET → 4.5yr study + 1yr internship.",r:["General Physician","Medical Officer","Resident Doctor"],o:"🥼 White coat + stethoscope",sa:{i:"₹25K-40K/mo",j:"₹6-12 LPA",s:"₹15-30 LPA",e:"₹35-80 LPA",p:"₹1-3 Cr"},jr:[{l:"Schooling",t:"10th",d:"Science, Biology",dr:"Till 15-16"},{l:"12th",t:"12th PCB",d:"PCB 50%+",dr:"2 years"},{l:"Entrance",t:"NEET-UG",d:"Medical entrance",dr:"1-2 yr prep"},{l:"UG",t:"MBBS",d:"MCI college",dr:"4.5+1 yr"},{l:"Reg",t:"Medical Council",d:"Register to practice",dr:"Done"},{l:"Career",t:"General Physician",d:"Hospitals, clinics",dr:"Ongoing"}]},
+{id:6,n:"Specialist Doctor",ic:"👨‍⚕️",f:"doctor",t:"none",s:"both",g:"both",nv:false,q:"MBBS + MD/MS",qd:"NEET-PG → specialize in Cardiology, Surgery etc.",r:["Cardiologist","Neurologist","Surgeon","Gynecologist","Pediatrician"],o:"🥼 White coat + specialty badge",sa:{i:"₹40K-60K/mo",j:"₹10-18 LPA",s:"₹25-60 LPA",e:"₹60L-1.5Cr",p:"₹1.5-5 Cr"},jr:[{l:"Schooling",t:"10th",d:"Excel in Science",dr:"Till 15-16"},{l:"12th",t:"12th PCB",d:"PCB stream",dr:"2 years"},{l:"NEET",t:"NEET-UG",d:"MBBS admission",dr:"1-2 yr"},{l:"MBBS",t:"MBBS",d:"With internship",dr:"5.5 yr"},{l:"PG",t:"NEET-PG → MD/MS",d:"3yr specialization",dr:"3 years"},{l:"Super",t:"DM/MCh (Opt)",d:"Sub-specialization",dr:"3 years"},{l:"Career",t:"Specialist",d:"Hospital/clinic",dr:"Ongoing"}]},
+{id:7,n:"Dentist",ic:"🦷",f:"doctor",t:"none",s:"both",g:"state",nv:false,q:"BDS (5 years)",qd:"Dental surgery + optional MDS.",r:["General Dentist","Orthodontist","Dental Surgeon"],o:"🥼 White coat + mask",sa:{i:"₹15K-25K/mo",j:"₹4-8 LPA",s:"₹10-25 LPA",e:"₹30-60 LPA",p:"₹60L-1.5Cr"},jr:[{l:"Schooling",t:"10th",d:"Science",dr:"Till 15-16"},{l:"12th",t:"12th PCB",d:"PCB",dr:"2 years"},{l:"Entrance",t:"NEET",d:"Dental admission",dr:"1 yr"},{l:"UG",t:"BDS",d:"4+1 years",dr:"5 years"},{l:"PG",t:"MDS (Opt)",d:"Specialization",dr:"3 years"},{l:"Career",t:"Dentist",d:"Clinics, hospitals",dr:"Ongoing"}]},
+{id:8,n:"Advocate / Lawyer",ic:"⚖️",f:"law",t:"none",s:"private",g:null,nv:false,q:"BA LLB / LLB + AIBE",qd:"5yr integrated or 3yr LLB. Bar exam.",r:["Civil Lawyer","Criminal Lawyer","Corporate Lawyer","SC Advocate"],o:"🖤 Black coat + white shirt + bands",sa:{i:"₹5K-15K/mo",j:"₹2-5 LPA",s:"₹8-20 LPA",e:"₹25-80 LPA",p:"₹1-10 Cr+"},jr:[{l:"Schooling",t:"10th",d:"Language skills",dr:"Till 15-16"},{l:"12th",t:"12th Any",d:"Good English",dr:"2 years"},{l:"Entrance",t:"CLAT/AILET",d:"Law entrance",dr:"1 yr"},{l:"UG",t:"BA LLB",d:"5yr law degree",dr:"5 years"},{l:"Bar",t:"AIBE",d:"License to practice",dr:"After grad"},{l:"Career",t:"Advocate",d:"Courts",dr:"Ongoing"}]},
+{id:9,n:"Judge",ic:"🧑‍⚖️",f:"law",t:"none",s:"government",g:"both",nv:false,q:"LLB/LLM + Judicial Exam",qd:"Law degree + judicial service exam.",r:["Civil Judge","District Judge","HC Judge","SC Judge"],o:"🖤 Black robe / judicial attire",sa:{i:"N/A",j:"₹8-12 LPA",s:"₹15-25 LPA",e:"₹25-40 LPA",p:"₹40-80 LPA"},jr:[{l:"Schooling",t:"10th",d:"Analytical",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Any stream",dr:"2 years"},{l:"UG",t:"LLB",d:"Law degree",dr:"5/3 yr"},{l:"PG",t:"LLM",d:"Master of Laws",dr:"1-2 yr"},{l:"Practice",t:"7yr Advocate",d:"Min 7yr practice",dr:"7 years"},{l:"Exam",t:"Judicial Exam",d:"Prelims+Mains+IV",dr:"1-2 yr"},{l:"Career",t:"Civil Judge",d:"Judiciary",dr:"Start"}]},
+{id:10,n:"Bank PO",ic:"🏦",f:"bank",t:"software",s:"government",g:"central",nv:false,q:"Any Grad + IBPS/SBI PO",qd:"Reasoning, Quant, English, GA.",r:["Probationary Officer","Asst Manager","Branch Manager"],o:"👔 Formal suit + ID",sa:{i:"N/A",j:"₹5-7 LPA",s:"₹8-14 LPA",e:"₹15-25 LPA",p:"₹25-40 LPA"},jr:[{l:"Schooling",t:"10th",d:"Maths, English",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Any stream",dr:"2 years"},{l:"UG",t:"Any Graduation",d:"Any discipline",dr:"3-4 yr"},{l:"Prep",t:"Banking Prep",d:"Reasoning, Quant, GA",dr:"6-12 mo"},{l:"Exam",t:"IBPS/SBI PO",d:"Prelims→Mains→IV",dr:"Annual"},{l:"Career",t:"Bank Officer",d:"Asst Manager+",dr:"Start"}]},
+{id:11,n:"RBI Grade B",ic:"🏛️",f:"bank",t:"software",s:"government",g:"central",nv:false,q:"Grad 60% + RBI Exam",qd:"Economics, Finance, Management.",r:["RBI Grade B Officer","Manager RBI"],o:"👔 Formal + RBI badge",sa:{i:"N/A",j:"₹8-10 LPA",s:"₹12-20 LPA",e:"₹22-35 LPA",p:"₹35-55 LPA"},jr:[{l:"Schooling",t:"10th",d:"Academics",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Any",dr:"2 years"},{l:"UG",t:"Grad 60%+",d:"Economics pref",dr:"3-4 yr"},{l:"Prep",t:"RBI Prep",d:"Economics, Finance",dr:"8-12 mo"},{l:"Exam",t:"RBI Grade B",d:"Phase I→II→IV",dr:"Annual"},{l:"Career",t:"RBI Officer",d:"RBI offices",dr:"Start"}]},
+{id:12,n:"Mechanical Engineer",ic:"⚙️",f:"engineering",t:"hardware",s:"both",g:"both",nv:false,q:"B.Tech Mechanical",qd:"Mechanics, thermo, manufacturing.",r:["Design Engineer","Production Engineer","Quality Engineer"],o:"👷 Hard hat + safety vest",sa:{i:"₹8K-15K/mo",j:"₹3-6 LPA",s:"₹8-16 LPA",e:"₹18-35 LPA",p:"₹35-60 LPA"},jr:[{l:"Schooling",t:"10th",d:"Maths, Science",dr:"Till 15-16"},{l:"12th",t:"12th PCM",d:"PCM",dr:"2 years"},{l:"Entrance",t:"JEE",d:"Eng entrance",dr:"1-2 yr"},{l:"UG",t:"B.Tech Mech",d:"Thermo, fluids, design",dr:"4 years"},{l:"GATE",t:"GATE (Opt)",d:"PSU/M.Tech",dr:"6 mo"},{l:"Career",t:"Mech Engineer",d:"Mfg, auto, aerospace",dr:"Start"}]},
+{id:13,n:"Software Engineer",ic:"🖥️",f:"engineering",t:"software",s:"private",g:null,nv:false,q:"B.Tech CS/IT",qd:"DSA, System Design, Databases.",r:["SDE","Systems Engineer","Tech Lead","Architect"],o:"👕 Casual tee + laptop",sa:{i:"₹10K-25K/mo",j:"₹4-8 LPA",s:"₹10-25 LPA",e:"₹30-70 LPA",p:"₹70L-2Cr+"},jr:[{l:"Schooling",t:"10th",d:"Maths, logic",dr:"Till 15-16"},{l:"12th",t:"12th PCM/CS",d:"CS/Maths",dr:"2 years"},{l:"Entrance",t:"JEE",d:"Eng entrance",dr:"1 yr"},{l:"UG",t:"B.Tech CSE",d:"CS or IT",dr:"4 years"},{l:"Skills",t:"DSA + Projects",d:"Algorithms, coding",dr:"During college"},{l:"Career",t:"Software Engineer",d:"IT cos, FAANG, startups",dr:"Start"}]},
+{id:14,n:"Electrical Engineer",ic:"⚡",f:"engineering",t:"hardware",s:"both",g:"both",nv:false,q:"B.Tech EE/EEE",qd:"Power systems, electronics, automation.",r:["Power Engineer","Control Engineer","Instrumentation"],o:"👷 Safety gear + hard hat",sa:{i:"₹8K-12K/mo",j:"₹3-6 LPA",s:"₹8-16 LPA",e:"₹18-32 LPA",p:"₹35-55 LPA"},jr:[{l:"Schooling",t:"10th",d:"Physics, Maths",dr:"Till 15-16"},{l:"12th",t:"12th PCM",d:"PCM",dr:"2 years"},{l:"Entrance",t:"JEE/CET",d:"Eng entrance",dr:"1 yr"},{l:"UG",t:"B.Tech EE",d:"Electrical Engg",dr:"4 years"},{l:"GATE",t:"GATE",d:"BHEL, NTPC",dr:"6 mo"},{l:"Career",t:"Electrical Eng",d:"Power cos, PSUs",dr:"Start"}]},
+{id:15,n:"Civil Engineer",ic:"🏗️",f:"engineering",t:"hardware",s:"both",g:"state",nv:false,q:"B.Tech Civil",qd:"Roads, bridges, buildings.",r:["Site Engineer","Structural Eng","Project Manager"],o:"👷 Hard hat + boots",sa:{i:"₹8K-12K/mo",j:"₹3-5 LPA",s:"₹7-14 LPA",e:"₹16-30 LPA",p:"₹30-50 LPA"},jr:[{l:"Schooling",t:"10th",d:"Maths, Physics",dr:"Till 15-16"},{l:"12th",t:"12th PCM",d:"PCM",dr:"2 years"},{l:"Entrance",t:"JEE/CET",d:"Eng entrance",dr:"1 yr"},{l:"UG",t:"B.Tech Civil",d:"Structures, geotech",dr:"4 years"},{l:"GATE",t:"GATE (Opt)",d:"PWD, NHAI",dr:"6 mo"},{l:"Career",t:"Civil Engineer",d:"Construction, govt",dr:"Start"}]},
+{id:16,n:"School Teacher",ic:"📚",f:"teaching",t:"none",s:"both",g:"state",nv:false,q:"Grad + B.Ed + TET",qd:"B.Ed + TET/CTET mandatory.",r:["PRT","TGT","PGT"],o:"👩‍🏫 Formal / saree",sa:{i:"₹8K-12K/mo",j:"₹2.5-5 LPA",s:"₹6-12 LPA",e:"₹12-18 LPA",p:"₹18-30 LPA"},jr:[{l:"Schooling",t:"10th",d:"Good academics",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Choose stream",dr:"2 years"},{l:"UG",t:"BA/BSc/BCom",d:"Subject to teach",dr:"3 years"},{l:"B.Ed",t:"B.Ed",d:"Pedagogy, psych",dr:"2 years"},{l:"Exam",t:"TET/CTET",d:"Teacher Eligibility",dr:"3-6 mo"},{l:"Career",t:"Teacher",d:"Govt/pvt schools",dr:"Start"}]},
+{id:17,n:"Professor",ic:"🎓",f:"teaching",t:"none",s:"both",g:"both",nv:false,q:"Master's + NET + PhD",qd:"UGC NET + PhD for colleges.",r:["Asst Prof","Assoc Prof","Professor","Dean"],o:"👔 Formal / academic gown",sa:{i:"N/A",j:"₹5-8 LPA",s:"₹10-18 LPA",e:"₹18-30 LPA",p:"₹30-50 LPA"},jr:[{l:"Schooling",t:"10th",d:"Strong academics",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Relevant stream",dr:"2 years"},{l:"UG",t:"Bachelor's",d:"Good grades",dr:"3 years"},{l:"PG",t:"Master's 55%+",d:"Specialization",dr:"2 years"},{l:"NET",t:"UGC NET/SET",d:"Eligibility test",dr:"6-12 mo"},{l:"PhD",t:"PhD",d:"Doctoral research",dr:"3-5 years"},{l:"Career",t:"Asst Professor",d:"College/univ",dr:"Start"}]},
+{id:18,n:"IAS Officer",ic:"🏛️",f:"civil",t:"none",s:"government",g:"central",nv:false,q:"Any Grad + UPSC CSE",qd:"India's most prestigious. Prelims+Mains+IV.",r:["SDM","DM","Commissioner","Chief Secretary"],o:"👔 Formal / khaki safari",sa:{i:"N/A",j:"₹8-12 LPA",s:"₹15-22 LPA",e:"₹25-35 LPA",p:"₹35-60 LPA+perks"},jr:[{l:"Schooling",t:"10th",d:"All-round",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Any stream",dr:"2 years"},{l:"UG",t:"Any Grad",d:"Any univ",dr:"3-4 yr"},{l:"Prep",t:"UPSC Prep",d:"GS, CSAT, Optional",dr:"1-3 yr"},{l:"Prelims",t:"Prelims",d:"GS + CSAT",dr:"June"},{l:"Mains",t:"Mains",d:"9 papers",dr:"Sept-Oct"},{l:"IV",t:"Interview",d:"275 marks",dr:"Mar-Apr"},{l:"Training",t:"LBSNAA",d:"Mussoorie",dr:"2 years"}]},
+{id:19,n:"IPS Officer",ic:"👮",f:"civil",t:"none",s:"government",g:"central",nv:false,q:"Any Grad + UPSC CSE",qd:"Police Service. Physical standards.",r:["ASP","SP","DIG","IG","DGP"],o:"👮 Khaki uniform + stars",sa:{i:"N/A",j:"₹8-12 LPA",s:"₹14-20 LPA",e:"₹22-32 LPA",p:"₹35-55 LPA+perks"},jr:[{l:"Schooling",t:"10th",d:"Fitness + academics",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Any",dr:"2 years"},{l:"UG",t:"Any Grad",d:"Degree",dr:"3-4 yr"},{l:"UPSC",t:"CSE Exam",d:"Prelims,Mains,IV",dr:"1-3 yr"},{l:"Physical",t:"Physical Test",d:"Height,chest,eyes",dr:"Throughout"},{l:"Training",t:"SVPNPA",d:"Hyderabad",dr:"1 year"},{l:"Career",t:"ASP/DSP",d:"First posting",dr:"Start"}]},
+{id:20,n:"Army Officer",ic:"🎖️",f:"defence",t:"hardware",s:"government",g:"central",nv:false,q:"Grad + NDA/CDS/SSB",qd:"NDA after 12th, CDS after grad.",r:["Lieutenant","Captain","Major","Colonel","General"],o:"🎖️ Military uniform",sa:{i:"N/A",j:"₹7-10 LPA",s:"₹12-18 LPA",e:"₹20-30 LPA",p:"₹35-55 LPA+perks"},jr:[{l:"Schooling",t:"10th",d:"Fitness + NCC",dr:"Till 15-16"},{l:"12th",t:"12th PCM",d:"PCM for NDA",dr:"2 years"},{l:"Path1",t:"NDA (After 12th)",d:"Written + SSB",dr:"Age 16-19"},{l:"Path2",t:"CDS (After Grad)",d:"Combined Defence",dr:"After grad"},{l:"SSB",t:"SSB Interview",d:"5-day assessment",dr:"5 days"},{l:"Training",t:"IMA Dehradun",d:"Military Academy",dr:"1-1.5 yr"},{l:"Career",t:"Lieutenant",d:"Passing Out Parade",dr:"Start"}]},
+{id:21,n:"Navy Officer",ic:"⚓",f:"defence",t:"both",s:"government",g:"central",nv:false,q:"B.Tech/Grad + NDA/INET",qd:"Naval officer entries.",r:["Sub Lt","Lieutenant","Commander","Captain","Admiral"],o:"⚓ White naval uniform",sa:{i:"N/A",j:"₹7-10 LPA",s:"₹12-18 LPA",e:"₹20-30 LPA",p:"₹35-55 LPA+perks"},jr:[{l:"Schooling",t:"10th",d:"Maths, Swimming",dr:"Till 15-16"},{l:"12th",t:"12th PCM",d:"PCM mandatory",dr:"2 years"},{l:"Entrance",t:"NDA/INET/CDS",d:"Multiple entries",dr:"Eligible"},{l:"SSB",t:"SSB",d:"5-day test",dr:"5 days"},{l:"Training",t:"INA Ezhimala",d:"Naval Academy",dr:"1 year"},{l:"Career",t:"Sub Lieutenant",d:"Ships, subs",dr:"Start"}]},
+{id:22,n:"Graphic Designer",ic:"🎨",f:"arts",t:"software",s:"private",g:null,nv:true,q:"BFA / B.Des",qd:"Visual comm, Adobe Suite, UI/UX.",r:["Graphic Designer","UI/UX Designer","Art Director"],o:"🎨 Creative casual + sketchbook",sa:{i:"₹5K-12K/mo",j:"₹2-5 LPA",s:"₹6-14 LPA",e:"₹15-30 LPA",p:"₹30-60 LPA"},jr:[{l:"Schooling",t:"10th",d:"Art, creativity",dr:"Till 15-16"},{l:"12th",t:"12th Any",d:"Portfolio",dr:"2 years"},{l:"Entrance",t:"NID/NIFT",d:"Design entrance",dr:"1 yr"},{l:"UG",t:"BFA/B.Des",d:"Fine Arts/Design",dr:"3-4 yr"},{l:"Tools",t:"Adobe + Figma",d:"PS, AI, Figma",dr:"During study"},{l:"Career",t:"Jr Designer",d:"Studios, agencies",dr:"Start"}]},
+{id:23,n:"Research Scientist",ic:"🔬",f:"science",t:"none",s:"both",g:"central",nv:false,q:"M.Sc + PhD",qd:"Research at ISRO, DRDO, CSIR.",r:["Research Associate","Scientist B/C/D","Lab Director"],o:"🥼 Lab coat + goggles",sa:{i:"₹25K-35K/mo",j:"₹5-8 LPA",s:"₹10-18 LPA",e:"₹20-35 LPA",p:"₹35-60 LPA"},jr:[{l:"Schooling",t:"10th",d:"Science + Maths",dr:"Till 15-16"},{l:"12th",t:"12th PCM/PCB",d:"Science stream",dr:"2 years"},{l:"UG",t:"B.Sc",d:"Physics/Chem/Bio",dr:"3 years"},{l:"Entrance",t:"JAM/JEST/NET",d:"Research entrance",dr:"6-12 mo"},{l:"PG",t:"M.Sc",d:"Master's + thesis",dr:"2 years"},{l:"PhD",t:"PhD",d:"Doctoral research",dr:"3-5 yr"},{l:"Career",t:"Scientist at ISRO/DRDO",d:"Govt research",dr:"Start"}]},
+{id:24,n:"Pharmacist",ic:"💊",f:"science",t:"none",s:"both",g:"state",nv:false,q:"B.Pharm (4 years)",qd:"Drug composition, pharmacology.",r:["Hospital Pharmacist","Drug Inspector","Researcher"],o:"🥼 White coat + badge",sa:{i:"₹8K-12K/mo",j:"₹2.5-5 LPA",s:"₹6-12 LPA",e:"₹14-25 LPA",p:"₹25-45 LPA"},jr:[{l:"Schooling",t:"10th",d:"Chemistry, Bio",dr:"Till 15-16"},{l:"12th",t:"12th PCM/PCB",d:"Physics, Chem",dr:"2 years"},{l:"UG",t:"B.Pharm",d:"4yr pharmacy",dr:"4 years"},{l:"Reg",t:"Pharmacy Council",d:"State registration",dr:"Done"},{l:"PG",t:"M.Pharm (Opt)",d:"Specialization",dr:"2 years"},{l:"Career",t:"Pharmacist",d:"Hospital, drug co, govt",dr:"Start"}]},
+{id:25,n:"Chartered Accountant",ic:"📋",f:"commerce",t:"software",s:"both",g:null,nv:false,q:"CA Found+Inter+Final",qd:"ICAI. Accounting, audit, tax.",r:["Auditor","Tax Consultant","CFO","CA Partner"],o:"👔 Formal suit + calculator",sa:{i:"₹5K-10K/mo",j:"₹5-8 LPA",s:"₹10-20 LPA",e:"₹25-55 LPA",p:"₹60L-2Cr+"},jr:[{l:"Schooling",t:"10th",d:"Strong Maths",dr:"Till 15-16"},{l:"12th",t:"12th Commerce",d:"Accounts, Business",dr:"2 years"},{l:"L1",t:"CA Foundation",d:"Accounting, Law, Eco",dr:"4 months"},{l:"L2",t:"CA Intermediate",d:"8 papers",dr:"8 months"},{l:"Article",t:"3yr Articleship",d:"Training under CA",dr:"3 years"},{l:"L3",t:"CA Final",d:"Advanced papers",dr:"During article"},{l:"Member",t:"ICAI Member",d:"Become CA",dr:"Done"},{l:"Career",t:"CA",d:"Practice/corporate",dr:"Start"}]},
+{id:26,n:"Company Secretary",ic:"📑",f:"commerce",t:"software",s:"private",g:null,nv:false,q:"CSEET+CS Exec+Prof",qd:"ICSI. Corporate governance.",r:["Company Secretary","Compliance Officer"],o:"👔 Business formal",sa:{i:"₹5K-10K/mo",j:"₹4-7 LPA",s:"₹8-16 LPA",e:"₹18-35 LPA",p:"₹35-60 LPA"},jr:[{l:"Schooling",t:"10th",d:"Business interest",dr:"Till 15-16"},{l:"12th",t:"12th Commerce",d:"Business, Accounts",dr:"2 years"},{l:"Entry",t:"CSEET",d:"Entrance test",dr:"After 12th"},{l:"L1",t:"CS Executive",d:"Company law, tax",dr:"1 yr"},{l:"L2",t:"CS Professional",d:"Advanced corp law",dr:"1 yr"},{l:"Training",t:"Practical Training",d:"15-21 months",dr:"During"},{l:"Career",t:"CS",d:"Corporate compliance",dr:"Start"}]},
+{id:27,n:"Data Entry Operator",ic:"⌨️",f:"nonvoice",t:"software",s:"both",g:"both",nv:true,q:"10th/12th + Typing 35+ WPM",qd:"Basic computer, MS Office, typing.",r:["DEO","Data Processing Asst","Computer Operator"],o:"👕 Simple formal",sa:{i:"₹5K-8K/mo",j:"₹1.5-3 LPA",s:"₹3-5 LPA",e:"₹5-8 LPA",p:"₹8-12 LPA"},jr:[{l:"10th",t:"10th Standard",d:"Basic education",dr:"Till 15-16"},{l:"12th",t:"12th (Opt)",d:"Any stream",dr:"2 years"},{l:"Skills",t:"Typing + MS Office",d:"35+ WPM, Excel",dr:"1-3 months"},{l:"Cert",t:"Computer Course",d:"NIELIT O-Level",dr:"3-6 mo"},{l:"Career",t:"DEO",d:"Govt offices, BPO",dr:"Start"}]},
+{id:28,n:"Content Writer",ic:"✍️",f:"nonvoice",t:"software",s:"private",g:null,nv:true,q:"Any Grad + English Skills",qd:"Writing, SEO, blogs, web content.",r:["Content Writer","Copywriter","Technical Writer","SEO Writer"],o:"☕ Casual / WFH",sa:{i:"₹5K-10K/mo",j:"₹2-4 LPA",s:"₹5-10 LPA",e:"₹12-22 LPA",p:"₹25-45 LPA"},jr:[{l:"Schooling",t:"10th",d:"Writing skills",dr:"Till 15-16"},{l:"12th",t:"12th Any",d:"Good English",dr:"2 years"},{l:"UG",t:"Any Graduation",d:"English/Journalism pref",dr:"3 years"},{l:"Skills",t:"SEO + WordPress",d:"Content tools",dr:"2-4 mo"},{l:"Portfolio",t:"Writing Portfolio",d:"Blog, Medium, guest posts",dr:"3-6 mo"},{l:"Career",t:"Jr Writer",d:"Agencies, startups",dr:"Start"}]},
+{id:29,n:"Medical Coder",ic:"🏥",f:"nonvoice",t:"software",s:"private",g:null,nv:true,q:"Any Degree + CPC/CCS",qd:"Medical codes for healthcare IT.",r:["Medical Coder","Clinical Coder","HIM Specialist"],o:"👕 Business casual",sa:{i:"₹8K-12K/mo",j:"₹2.5-5 LPA",s:"₹5-10 LPA",e:"₹12-20 LPA",p:"₹22-35 LPA"},jr:[{l:"Schooling",t:"10th",d:"Science interest",dr:"Till 15-16"},{l:"12th",t:"12th Any",d:"Bio preferred",dr:"2 years"},{l:"UG",t:"Any Degree",d:"Life sciences pref",dr:"3 years"},{l:"Cert",t:"CPC/CCS Cert",d:"AAPC/AHIMA coding",dr:"3-6 mo"},{l:"Training",t:"ICD-10/CPT",d:"Medical terminology",dr:"2-3 mo"},{l:"Career",t:"Medical Coder",d:"Healthcare cos, remote",dr:"Start"}]},
+{id:30,n:"Chat Support",ic:"💬",f:"nonvoice",t:"software",s:"private",g:null,nv:true,q:"12th/Grad + Typing",qd:"Customer queries via chat/email. No calls.",r:["Chat Support","Email Support","Help Desk"],o:"🎧 Casual / headset opt",sa:{i:"₹5K-8K/mo",j:"₹1.8-3 LPA",s:"₹3-6 LPA",e:"₹6-10 LPA",p:"₹10-18 LPA"},jr:[{l:"Schooling",t:"10th",d:"Basic",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Any",dr:"2 years"},{l:"Skills",t:"Typing + English",d:"30+ WPM written",dr:"1-2 mo"},{l:"Training",t:"CRM Training",d:"Communication, tools",dr:"2-4 weeks"},{l:"Career",t:"Chat Support",d:"BPO, e-comm",dr:"Start"}]},
+{id:31,n:"Transcriptionist",ic:"🎧",f:"nonvoice",t:"software",s:"private",g:null,nv:true,q:"12th + Typing 60+ WPM",qd:"Audio/video to text. Medical/legal/general.",r:["General Transcriptionist","Medical Transcriptionist"],o:"🎧 Home office setup",sa:{i:"₹5K-8K/mo",j:"₹1.8-3.5 LPA",s:"₹4-8 LPA",e:"₹8-14 LPA",p:"₹15-25 LPA"},jr:[{l:"Schooling",t:"10th",d:"Listening skills",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Any",dr:"2 years"},{l:"Skills",t:"Typing 60+ WPM",d:"Fast accurate typing",dr:"2-4 mo"},{l:"Cert",t:"Transcription Course",d:"Med/legal terminology",dr:"2-3 mo"},{l:"Career",t:"Transcriptionist",d:"Freelance, remote",dr:"Start"}]},
+{id:32,n:"Journalist",ic:"📰",f:"arts",t:"none",s:"private",g:null,nv:false,q:"BJMC / BA Journalism",qd:"Media, reporting, broadcasting.",r:["Reporter","News Anchor","Editor","Correspondent"],o:"🎤 Smart casual + press badge",sa:{i:"₹5K-12K/mo",j:"₹2.5-5 LPA",s:"₹6-14 LPA",e:"₹15-30 LPA",p:"₹35-70 LPA"},jr:[{l:"Schooling",t:"10th",d:"Writing",dr:"Till 15-16"},{l:"12th",t:"12th Arts",d:"English, PolSci",dr:"2 years"},{l:"Entrance",t:"IIMC/ACJ",d:"Mass comm entrance",dr:"1 yr"},{l:"UG",t:"BJMC",d:"Mass Communication",dr:"3 years"},{l:"Internship",t:"Media Intern",d:"Newspapers, TV",dr:"3-6 mo"},{l:"Career",t:"Reporter",d:"Newsroom",dr:"Start"}]},
+{id:33,n:"Bank Clerk",ic:"💰",f:"bank",t:"software",s:"government",g:"central",nv:false,q:"Any Grad + IBPS Clerk",qd:"Reasoning, English, Numerical, GA.",r:["Bank Clerk","Cashier","Office Asst"],o:"👔 Formal + bank ID",sa:{i:"N/A",j:"₹3-5 LPA",s:"₹5-8 LPA",e:"₹8-12 LPA",p:"₹12-18 LPA"},jr:[{l:"Schooling",t:"10th",d:"Maths, language",dr:"Till 15-16"},{l:"12th",t:"12th",d:"Any",dr:"2 years"},{l:"UG",t:"Any Grad",d:"Minimum grad",dr:"3 years"},{l:"Prep",t:"IBPS Prep",d:"Aptitude, reasoning",dr:"4-8 mo"},{l:"Exam",t:"IBPS Clerk",d:"Prelims→Mains",dr:"Annual"},{l:"Career",t:"Bank Clerk",d:"Branch duties",dr:"Start"}]},
+{id:34,n:"Veterinary Doctor",ic:"🐾",f:"doctor",t:"none",s:"both",g:"state",nv:false,q:"B.V.Sc (5.5 yrs)",qd:"Animal surgery, medicine.",r:["Veterinarian","Vet Surgeon","AHO"],o:"🥼 White coat + gloves",sa:{i:"₹15K-20K/mo",j:"₹4-7 LPA",s:"₹8-16 LPA",e:"₹18-30 LPA",p:"₹30-50 LPA"},jr:[{l:"Schooling",t:"10th",d:"Animals, Biology",dr:"Till 15-16"},{l:"12th",t:"12th PCB",d:"PCB",dr:"2 years"},{l:"Entrance",t:"NEET",d:"Vet counseling",dr:"1 yr"},{l:"UG",t:"B.V.Sc",d:"Vet Science",dr:"5+0.5 yr"},{l:"Reg",t:"VCI Reg",d:"Register",dr:"Done"},{l:"Career",t:"Vet Doctor",d:"Animal hospitals",dr:"Start"}]},
+{id:35,n:"CFA Analyst",ic:"💹",f:"commerce",t:"software",s:"private",g:null,nv:false,q:"Grad + CFA 3 Levels",qd:"Portfolio mgmt, financial analysis.",r:["Financial Analyst","Portfolio Manager","Investment Banker"],o:"👔 Wall Street formal",sa:{i:"₹15K-25K/mo",j:"₹6-12 LPA",s:"₹15-30 LPA",e:"₹35-70 LPA",p:"₹80L-2Cr+"},jr:[{l:"Schooling",t:"10th",d:"Maths, analytics",dr:"Till 15-16"},{l:"12th",t:"12th Comm/Sci",d:"Maths, Eco",dr:"2 years"},{l:"UG",t:"BBA/BCom/BTech",d:"Finance pref",dr:"3-4 yr"},{l:"CFA I",t:"Investment Tools",d:"Quant, Eco, FR",dr:"6 mo"},{l:"CFA II",t:"Asset Valuation",d:"Equity, FI, Derivatives",dr:"6 mo"},{l:"CFA III",t:"Portfolio Mgmt",d:"Wealth Planning",dr:"6 mo"},{l:"Career",t:"Financial Analyst",d:"Banks, hedge funds",dr:"Start"}]}
+];
+
+let fF='all',fT='all',fS='all',vM='normal',zL=1;
+const FC={fullstack:'#00d4ff',doctor:'#00ff88',law:'#ff8c00',bank:'#ffd700',engineering:'#8b5cf6',teaching:'#ff006e',civil:'#ff6b6b',defence:'#4ecdc4',arts:'#f39c12',science:'#3498db',commerce:'#e74c3c',nonvoice:'#a29bfe'};
+const FN={fullstack:'💻 Full Stack/IT',doctor:'🩺 Medical',law:'⚖️ Law',bank:'🏦 Banking',engineering:'⚙️ Engineering',teaching:'📚 Teaching',civil:'🏛️ Civil Services',defence:'🎖️ Defence',arts:'🎨 Arts',science:'🔬 Science',commerce:'📊 Commerce',nonvoice:'🤫 Non-Voice'};
+
+document.addEventListener('DOMContentLoaded',()=>{mkBG();mkTop();mkLeft();mkRight();mkBot();doRender();mkModal();mkZoom()});
+
+function mkBG(){const c=document.getElementById('bg');['#00d4ff','#ff006e','#00ff88','#8b5cf6','#ff8c00','#ffd700'].forEach((cl,i)=>{const d=document.createElement('div');d.className='orb';const s=150+Math.random()*200;d.style.cssText=`width:${s}px;height:${s}px;background:${cl};left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${18+Math.random()*12}s;animation-delay:${Math.random()*5}s`;c.appendChild(d)})}
+
+function mkZoom(){document.querySelector('.cnt').addEventListener('wheel',e=>{if(vM!=='normal')return;e.preventDefault();zL=e.deltaY<0?Math.min(zL+.08,2.5):Math.max(zL-.08,.3);document.getElementById('zw').style.transform=`scale(${zL})`;const zi=document.getElementById('zi');if(zi)zi.textContent=`Zoom: ${Math.round(zL*100)}%`},{passive:false})}
+
+function mkTop(){const b=document.getElementById('tbar');[{k:'all',l:'🌐 All'},{k:'fullstack',l:'💻 Full Stack'},{k:'doctor',l:'🩺 Doctor'},{k:'law',l:'⚖️ Law'},{k:'bank',l:'🏦 Bank'},{k:'engineering',l:'⚙️ Engineering'},{k:'teaching',l:'📚 Teaching'},{k:'civil',l:'🏛️ Civil Services'},{k:'defence',l:'🎖️ Defence'},{k:'arts',l:'🎨 Arts'},{k:'science',l:'🔬 Science'},{k:'commerce',l:'📊 Commerce'},{k:'nonvoice',l:'🤫 Non-Voice'}].forEach(f=>{const btn=document.createElement('button');btn.className='tb'+(f.k===fF?' on':'');btn.setAttribute('data-f',f.k);btn.textContent=f.l;btn.onclick=()=>{fF=f.k;b.querySelectorAll('.tb').forEach(x=>x.classList.remove('on'));btn.classList.add('on');doRender()};b.appendChild(btn)})}
+
+function mkLeft(){const p=document.getElementById('lp');p.innerHTML='<div class="pt">⚡ Type</div>';[{k:'all',l:'🔘 All'},{k:'software',l:'💾 Software'},{k:'hardware',l:'🔧 Hardware'},{k:'both',l:'💾🔧 Both'},{k:'none',l:'📋 Other'}].forEach(t=>{const b=document.createElement('button');b.className='sb'+(t.k===fT?' on':'');b.textContent=t.l;b.onclick=()=>{fT=t.k;p.querySelectorAll('.sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');doRender()};p.appendChild(b)})}
+
+function mkRight(){const p=document.getElementById('rp');p.innerHTML='<div class="pt">🏢 Sector</div>';[{k:'all',l:'🔘 All'},{k:'private',l:'🏢 Private'},{k:'government',l:'🏛️ Govt'},{k:'state',l:'🗺️ State'},{k:'central',l:'🇮🇳 Central'},{k:'both',l:'🔀 Both'}].forEach(s=>{const b=document.createElement('button');b.className='sb'+(s.k===fS?' on':'');b.textContent=s.l;b.onclick=()=>{fS=s.k;p.querySelectorAll('.sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');doRender()};p.appendChild(b)})}
+
+function mkBot(){const b=document.getElementById('bb');b.innerHTML='<span class="vl">👁️ View:</span>';[{k:'normal',l:'📋 Normal'},{k:'tree',l:'🌳 Tree'},{k:'3d',l:'🧊 3D'},{k:'5d',l:'✨ 5D'}].forEach(v=>{const btn=document.createElement('button');btn.className='vb'+(v.k===vM?' on':'');btn.textContent=v.l;btn.onclick=()=>{vM=v.k;b.querySelectorAll('.vb').forEach(x=>x.classList.remove('on'));btn.classList.add('on');zL=1;document.getElementById('zw').style.transform='scale(1)';doRender()};b.appendChild(btn)});const z=document.createElement('span');z.className='zi';z.id='zi';z.textContent='Zoom: 100%';b.appendChild(z)}
+
+function fil(){return J.filter(j=>{if(fF!=='all'&&j.f!==fF)return false;if(fT==='software'&&j.t!=='software')return false;if(fT==='hardware'&&j.t!=='hardware')return false;if(fT==='both'&&j.t!=='both')return false;if(fT==='none'&&j.t!=='none')return false;if(fS==='private'&&j.s!=='private'&&j.s!=='both')return false;if(fS==='government'&&j.s!=='government'&&j.s!=='both')return false;if(fS==='state'&&j.g!=='state'&&j.g!=='both')return false;if(fS==='central'&&j.g!=='central'&&j.g!=='both')return false;if(fS==='both'&&j.s!=='both')return false;return true})}
+
+function tgs(j){let h='';if(j.t==='software')h+='<span class="tg tg-sw">SW</span>';else if(j.t==='hardware')h+='<span class="tg tg-hw">HW</span>';else if(j.t==='both')h+='<span class="tg tg-sw">SW</span><span class="tg tg-hw">HW</span>';if(j.s==='government'||j.s==='both')h+='<span class="tg tg-gv">Govt</span>';if(j.s==='private'||j.s==='both')h+='<span class="tg tg-pv">Pvt</span>';if(j.g==='state')h+='<span class="tg tg-sta">State</span>';else if(j.g==='central')h+='<span class="tg tg-ctr">Central</span>';else if(j.g==='both')h+='<span class="tg tg-sta">State</span><span class="tg tg-ctr">Central</span>';if(j.nv)h+='<span class="tg tg-nv">Non-Voice</span>';return h}
+
+function doRender(){
+    const jobs=fil(),g=document.getElementById('grd'),st=document.getElementById('sts');
+    st.innerHTML=`<div class="st"><b>${jobs.length}</b> Total</div><div class="st"><b>${jobs.filter(j=>j.s==='government'||j.s==='both').length}</b> Govt</div><div class="st"><b>${jobs.filter(j=>j.s==='private'||j.s==='both').length}</b> Pvt</div>`;
+    if(!jobs.length){g.className='';g.innerHTML='<div class="nrs"><div class="bi">🔍</div><h3>No Jobs Found</h3><p>Change filters</p></div>';return}
+    if(vM==='normal'){g.className='grd';rnCards(g,jobs)}
+    else if(vM==='3d'){g.className='scene3d';rn3D(g,jobs)}
+    else if(vM==='5d'){g.className='scene5d';rn5D(g,jobs)}
+    else if(vM==='tree'){g.className='tree';rnTree(g,jobs)}
+}
+
+// ===== NORMAL CARDS =====
+function rnCards(g,jobs){g.innerHTML='';jobs.forEach((j,i)=>{const c=document.createElement('div');c.className='cd';c.style.animationDelay=(i*.05)+'s';const cl=FC[j.f]||'#fff';c.innerHTML=`<div class="sp" style="background:linear-gradient(90deg,${cl},${cl}88)"></div><span class="ic">${j.ic}</span><div class="nm">${j.n}</div><div class="ql">${j.q}</div><div class="sal">💰 ${j.sa.j} → ${j.sa.e}</div><div class="tgs">${tgs(j)}</div>`;c.onclick=()=>opM(j);g.appendChild(c)})}
+
+// ===== 3D CUBES — TOTALLY DIFFERENT FROM NORMAL =====
+function rn3D(g,jobs){
+    g.innerHTML='';
+    jobs.forEach((j,i)=>{
+        const w=document.createElement('div');w.className='cube-wrap';
+        const cl=FC[j.f]||'#8b5cf6';
+        w.innerHTML=`
+            <div class="cube" style="animation-delay:${i*-0.8}s">
+                <div class="cube-glow"></div>
+                <div class="cube-face face-front" style="border-color:${cl}30">
+                    <div class="f-icon">${j.ic}</div>
+                    <div class="f-name" style="color:${cl}">${j.n}</div>
+                    <div class="f-qual">${j.q}</div>
+                    <div class="f-sal">💰 ${j.sa.j} → ${j.sa.e}</div>
+                    <div class="f-tags tgs" style="margin-top:auto">${tgs(j)}</div>
+                </div>
+                <div class="cube-face face-back" style="border-color:${cl}30">
+                    <div class="fb-title">ROLES</div>
+                    <div class="fb-roles">${j.r.map(r=>'• '+r).join('<br>')}</div>
+                    <div class="fb-outfit">${j.o}</div>
+                    <div class="fb-sector" style="color:${cl}">${j.s==='government'?'🏛️ Government':j.s==='private'?'🏢 Private':'🔀 Both'}</div>
+                </div>
+            </div>
+            <div class="cube-shadow"></div>
+        `;
+
+        // 3D mouse tracking
+        const cube=w.querySelector('.cube');
+        w.addEventListener('mousemove',e=>{
+            const r=w.getBoundingClientRect();
+            const x=(e.clientX-r.left)/r.width-.5;
+            const y=(e.clientY-r.top)/r.height-.5;
+            cube.style.transform=`rotateY(${x*50}deg) rotateX(${-y*40}deg)`;
+            cube.style.transition='transform 0.05s ease';
+        });
+        w.addEventListener('mouseleave',()=>{
+            cube.style.transition='transform 0.6s ease';
+            cube.style.transform='';
+            setTimeout(()=>{cube.style.transition='';},600);
+        });
+        w.onclick=()=>opM(j);
+        g.appendChild(w);
+    });
+}
+
+// ===== 5D VIEW =====
+function rn5D(g,jobs){g.innerHTML='';jobs.forEach((j,i)=>{const d=document.createElement('div');d.className='c5';d.style.animationDelay=(i*.12)+'s';const cl=FC[j.f]||'#fff';d.innerHTML=`<div class="tt5"><div class="tn">${j.n}</div><div class="to">${j.o}</div><div class="tq">🎓 ${j.q}</div><div class="ts">💰 ${j.sa.j} → ${j.sa.p}</div></div><div class="c5-in"><div class="gring"></div><div class="av5" style="border-color:${cl}44">${j.ic}</div><div class="c5n">${j.n}</div><div class="c5q">${j.q}</div><div class="c5s">💰 ${j.sa.j}</div><div class="tgs" style="margin-top:auto;justify-content:center">${tgs(j)}</div></div>`;d.onclick=()=>opM(j);g.appendChild(d)})}
+
+// ===== TREE =====
+const QL=[
+{k:'10th',l:'📗 10th Based Jobs',c:'#00d4ff',m:j=>/10th|12th/.test(j.q)&&!/Grad|B\.Tech|BCA|BA|BSc|BCom|LLB|MBBS|BDS|BFA|BJMC|Pharm/i.test(j.q)},
+{k:'diploma',l:'📘 12th / Diploma / Foundation',c:'#00ff88',m:j=>/12th|Diploma|Foundation|CSEET/i.test(j.q)&&!/B\.Tech|MBBS/i.test(j.q)},
+{k:'grad',l:'📙 Graduation Level',c:'#ffd700',m:j=>/B\.Tech|BCA|BA |BSc|BCom|BFA|BJMC|BA LLB|LLB|MBBS|BDS|Pharm|B\.V\.Sc|B\.Arch|B\.Des|Any Grad|Graduation/i.test(j.q)},
+{k:'pg',l:'📕 Post Graduation / Specialization',c:'#ff8c00',m:j=>/M\.Tech|MCA|MSc|Master|MD|MS |LLM|MDS|M\.Pharm|PhD|NET|CA Final|CS Prof|CFA/i.test(j.q)},
+{k:'exam',l:'📓 Competitive Exam Based',c:'#ff006e',m:j=>/UPSC|IBPS|SBI|RBI|NDA|CDS|CLAT|TET|CTET|NEET|JEE|GATE|SSB/i.test(j.q+' '+j.qd)}
+];
+
+function rnTree(g,jobs){
+    g.innerHTML='';
+    const root=document.createElement('div');root.style.cssText='text-align:center;margin-bottom:8px';
+    root.innerHTML=`<div class="troot">🌳 Career Tree · ${jobs.length} Jobs</div>`;
+    g.appendChild(root);
+    const used=new Set();
+    QL.forEach(ql=>{
+        const matched=jobs.filter(j=>!used.has(j.id)&&ql.m(j));
+        matched.forEach(j=>used.add(j.id));
+        if(!matched.length)return;
+        const conn=document.createElement('div');conn.className='tconn';conn.style.background=ql.c;g.appendChild(conn);
+        const lv=document.createElement('div');lv.className='tlvl';
+        const hd=document.createElement('div');hd.className='tlh op';hd.style.cssText=`background:${ql.c}12;border:1px solid ${ql.c}40;color:${ql.c}`;
+        hd.innerHTML=`<span class="ar">▶</span> ${ql.l} (${matched.length})`;
+        const items=document.createElement('div');items.className='tli';items.style.display='block';
+        const br=document.createElement('div');br.className='tbr';
+        matched.forEach(j=>{const lf=document.createElement('div');lf.className='tlf';lf.innerHTML=`<span class="li">${j.ic}</span><div><div class="ln">${j.n}</div><div class="lq">${j.q}</div></div>`;lf.onclick=()=>opM(j);br.appendChild(lf)});
+        items.appendChild(br);
+        hd.onclick=()=>{hd.classList.toggle('op');items.style.display=hd.classList.contains('op')?'block':'none'};
+        lv.appendChild(hd);lv.appendChild(items);g.appendChild(lv);
+    });
+    const rest=jobs.filter(j=>!used.has(j.id));
+    if(rest.length){const conn=document.createElement('div');conn.className='tconn';conn.style.background='#aaa';g.appendChild(conn);const lv=document.createElement('div');lv.className='tlvl';const hd=document.createElement('div');hd.className='tlh op';hd.style.cssText='background:#ffffff08;border:1px solid #ffffff20;color:#aaa';hd.innerHTML=`<span class="ar">▶</span> 📂 Other (${rest.length})`;const items=document.createElement('div');items.className='tli';items.style.display='block';const br=document.createElement('div');br.className='tbr';rest.forEach(j=>{const lf=document.createElement('div');lf.className='tlf';lf.innerHTML=`<span class="li">${j.ic}</span><div><div class="ln">${j.n}</div><div class="lq">${j.q}</div></div>`;lf.onclick=()=>opM(j);br.appendChild(lf)});items.appendChild(br);hd.onclick=()=>{hd.classList.toggle('op');items.style.display=hd.classList.contains('op')?'block':'none'};lv.appendChild(hd);lv.appendChild(items);g.appendChild(lv)}
+}
+
+// ===== MODAL =====
+function opM(j){
+    const ov=document.getElementById('ov'),m=document.getElementById('md'),cl=FC[j.f]||'#8b5cf6';
+    let tB='';if(j.t==='software')tB='<div class="bd bd-s">💾 Software</div>';else if(j.t==='hardware')tB='<div class="bd bd-h">🔧 Hardware</div>';else if(j.t==='both')tB='<div class="bd bd-s">💾 SW</div><div class="bd bd-h">🔧 HW</div>';else tB='<div class="bd bd-no">📋 Service</div>';if(j.nv)tB+='<div class="bd bd-nv">🤫 Non-Voice</div>';
+    let sB='';if(j.s==='private')sB='<div class="bd bd-p">🏢 Private</div>';else if(j.s==='government'){sB='<div class="bd bd-g">🏛️ Govt</div>';if(j.g==='state')sB+='<div class="bd bd-st">🗺️ State</div>';else if(j.g==='central')sB+='<div class="bd bd-ct">🇮🇳 Central</div>';else if(j.g==='both')sB+='<div class="bd bd-st">🗺️ State</div><div class="bd bd-ct">🇮🇳 Central</div>'}else if(j.s==='both'){sB='<div class="bd bd-g">🏛️ Govt</div><div class="bd bd-p">🏢 Private</div>';if(j.g==='state')sB+='<div class="bd bd-st">🗺️ State</div>';else if(j.g==='central')sB+='<div class="bd bd-ct">🇮🇳 Central</div>';else if(j.g==='both')sB+='<div class="bd bd-st">🗺️ State</div><div class="bd bd-ct">🇮🇳 Central</div>'}
+    m.innerHTML=`<div class="mhd"><div class="mst" style="background:linear-gradient(90deg,${cl},${cl}88)"></div><button class="cx" id="cx">✕</button><span class="mci">${j.ic}</span><h2 class="mct">${j.n}</h2><p class="mcs">${FN[j.f]||j.f} · ${j.o}</p></div><div class="mbd"><div class="sc"><div class="sct" style="color:#00d4ff">👤 Roles<div class="sln"></div></div><div class="rl">${j.r.map(r=>`<div class="rr"><div class="rd"></div><span>${r}</span></div>`).join('')}</div></div><div class="sc"><div class="sct" style="color:#ff8c00">⚡ Type<div class="sln"></div></div><div class="bds">${tB}</div></div><div class="sc"><div class="sct" style="color:#00ff88">🏢 Sector<div class="sln"></div></div><div class="bds">${sB}</div></div><div class="sc"><div class="sct" style="color:#ffd700">🎓 Qualification<div class="sln"></div></div><div class="qb"><div class="qm">${j.q}</div><div class="qd">${j.qd}</div></div></div><div class="sc"><div class="sct" style="color:#00ffcc">💰 Salary Range<div class="sln"></div></div><table class="stb"><tr><th>Level</th><th>Experience</th><th>Salary</th></tr><tr><td>🟢 Intern</td><td>0 yr</td><td>${j.sa.i}</td></tr><tr><td>🔵 Junior</td><td>1-3 yr</td><td>${j.sa.j}</td></tr><tr><td>🟡 Senior</td><td>4-8 yr</td><td>${j.sa.s}</td></tr><tr><td>🟠 Expert</td><td>8-15 yr</td><td>${j.sa.e}</td></tr><tr><td>🔴 Professional</td><td>15+ yr</td><td>${j.sa.p}</td></tr></table></div><div class="sc"><div class="sct" style="color:#ff006e">🛤️ Journey<div class="sln"></div></div><div class="tml">${j.jr.map(s=>`<div class="stp"><div class="sl">${s.l}</div><div class="stt">${s.t}</div><div class="sd">${s.d}</div><div class="sdr">⏱️ ${s.dr}</div></div>`).join('')}</div></div></div>`;
+    ov.classList.add('op');document.body.style.overflow='hidden';document.getElementById('cx').onclick=clM;
+}
+function clM(){document.getElementById('ov').classList.remove('op');document.body.style.overflow='auto'}
+function mkModal(){document.getElementById('ov').onclick=function(e){if(e.target===this)clM()};document.addEventListener('keydown',e=>{if(e.key==='Escape')clM()})}
+</script>
+</body>
+</html>
